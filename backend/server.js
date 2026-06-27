@@ -69,6 +69,16 @@ app.post("/login", async (req, res) => {
     });
 });
 
+app.get("/usuarios", async (req, res) => {
+    const resultado = await pool.query(`
+        SELECT id, nome, usuario, cargo, ativo, criado_em
+        FROM usuarios
+        ORDER BY id ASC
+    `);
+
+    res.json(resultado.rows);
+});
+
 app.get("/produtos", async (req, res) => {
     const resultado = await pool.query("SELECT * FROM produtos ORDER BY id ASC");
     res.json(resultado.rows);
