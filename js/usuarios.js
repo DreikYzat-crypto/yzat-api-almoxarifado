@@ -33,6 +33,7 @@ async function criarUsuario() {
             document.getElementById("usuario").value = "";
             document.getElementById("senha").value = "";
             document.getElementById("cargo").value = "almoxarife";
+            carregarUsuarios();
         } else {
             msg.style.color = "#ef4444";
             msg.innerText = dados.mensagem;
