@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const pool = require("./database");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,46 @@ app.get("/", (req, res) => {
     res.json({
         mensagem: "API YZAT Almoxarifado com PostgreSQL funcionando 🚀",
         versao: "3.0"
+    });
+});
+app.post("/login", async (req, res) => {
+    const { usuario, senha } = req.body;
+
+    if (!usuario || !senha) {
+        return res.status(400).json({
+            mensagem: "Usuário e senha são obrigatórios"
+        });
+    }
+
+    const resultado = await pool.query(
+        "SELECT * FROM usuarios WHERE usuario = $1 AND ativo = true",
+        [usuario]
+    );
+
+    if (resultado.rows.length === 0) {
+        return res.status(401).json({
+            mensagem: "Usuário ou senha incorretos"
+        });
+    }
+
+    const user = resultado.rows[0];
+
+    const senhaCorreta = await bcrypt.compare(senha, user.senha);
+
+    if (!senhaCorreta) {
+        return res.status(401).json({
+            mensagem: "Usuário ou senha incorretos"
+        });
+    }
+
+    res.json({
+        mensagem: "Login realizado com sucesso",
+        usuario: {
+            id: user.id,
+            nome: user.nome,
+            usuario: user.usuario,
+            cargo: user.cargo
+        }
     });
 });
 
