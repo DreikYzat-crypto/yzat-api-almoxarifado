@@ -408,3 +408,100 @@ body{
     color:white;
     font-weight:bold;
 }
+/* ===========================
+   BOTÃO PDF
+=========================== */
+
+.relatorios{
+    margin:20px 0 25px;
+}
+
+.btn-pdf{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(135deg,#0ea5e9,#2563eb);
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(14,165,233,.35);
+    transition:.3s;
+}
+
+.btn-pdf:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(14,165,233,.45);
+}
+
+.btn-pdf:active{
+    transform:scale(.98);
+}
+
+/* ===========================
+   BOTÃO CADASTRAR
+=========================== */
+
+.btn-cadastrar{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#0ea5e9;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.btn-cadastrar:hover{
+    background:#0284c7;
+    transform:translateY(-2px);
+}
+
+/* ===========================
+   AJUSTES DOS MODAIS
+=========================== */
+
+.modal-conteudo h3{
+    color:#e2e8f0;
+    background:#334155;
+    padding:12px;
+    border-radius:10px;
+    margin:12px 0 18px;
+    font-size:16px;
+}
+
+#textoExcluir{
+    white-space:pre-line;
+    color:#cbd5e1;
+    background:#334155;
+    padding:14px;
+    border-radius:10px;
+    margin:15px 0 18px;
+    line-height:1.5;
+}
+
+.modal-conteudo .btn-excluir{
+    margin-top:0;
+    width:100%;
+    border-radius:10px;
+}
+
+.btn-cancelar{
+    background:#64748b;
+}
+
+.btn-cancelar:hover{
+    background:#475569;
+}
+
+.btn-confirmar:hover{
+    background:#16a34a;
+}

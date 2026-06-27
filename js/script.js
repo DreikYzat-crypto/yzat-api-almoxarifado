@@ -3,7 +3,12 @@ if (localStorage.getItem("yzatLogado") !== "sim") {
 }
 
 const API = "https://yzat-almoxarifado.onrender.com";
+
 let graficoEstoque = null;
+let produtoSelecionado = null;
+let tipoMovimentacao = null;
+let produtoEditando = null;
+let produtoExcluindo = null;
 
 function obterStatusEstoque(quantidade) {
     const qtd = Number(quantidade);
@@ -154,6 +159,10 @@ async function pesquisarProduto() {
     mostrarProdutos(produtosFiltrados);
 }
 
+/* =========================
+   MODAL EDITAR
+========================= */
+
 async function editarProduto(id) {
     const produtos = await buscarProdutos();
     const produto = produtos.find(p => Number(p.id) === Number(id));
@@ -163,84 +172,141 @@ async function editarProduto(id) {
         return;
     }
 
-    const novoNome = prompt("Nome do produto:", produto.nome);
-    if (novoNome === null) return;
+    produtoEditando = id;
 
-    const novaQuantidade = Number(prompt("Quantidade:", produto.quantidade));
-    if (isNaN(novaQuantidade) || novaQuantidade < 0) {
-        alert("Quantidade inválida.");
+    document.getElementById("editarNome").value = produto.nome;
+    document.getElementById("editarQuantidade").value = produto.quantidade;
+    document.getElementById("editarLocalizacao").value = produto.localizacao;
+
+    document.getElementById("modalEditar").classList.add("ativo");
+}
+
+function fecharModalEditar() {
+    document.getElementById("modalEditar").classList.remove("ativo");
+    produtoEditando = null;
+}
+
+async function salvarEdicao() {
+    const nome = document.getElementById("editarNome").value.trim();
+    const quantidade = Number(document.getElementById("editarQuantidade").value);
+    const localizacao = document.getElementById("editarLocalizacao").value.trim();
+
+    if (nome === "" || quantidade < 0 || localizacao === "") {
+        alert("Preencha todos os campos corretamente.");
         return;
     }
 
-    const novaLocalizacao = prompt("Localização:", produto.localizacao);
-    if (novaLocalizacao === null) return;
-
-    if (novoNome.trim() === "" || novaLocalizacao.trim() === "") {
-        alert("Nome e localização não podem ficar vazios.");
-        return;
-    }
-
-    await fetch(`${API}/produtos/${id}`, {
+    await fetch(`${API}/produtos/${produtoEditando}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            nome: novoNome.trim(),
-            quantidade: novaQuantidade,
-            localizacao: novaLocalizacao.trim()
+            nome,
+            quantidade,
+            localizacao
         })
     });
 
+    fecharModalEditar();
     atualizarTudo();
 }
 
+/* =========================
+   MODAL EXCLUIR
+========================= */
+
 async function excluirProduto(id) {
-    const confirmar = confirm("Deseja realmente excluir este produto?");
+    const produtos = await buscarProdutos();
+    const produto = produtos.find(p => Number(p.id) === Number(id));
 
-    if (!confirmar) return;
+    if (!produto) {
+        alert("Produto não encontrado.");
+        return;
+    }
 
-    await fetch(`${API}/produtos/${id}`, {
+    produtoExcluindo = id;
+
+    document.getElementById("textoExcluir").innerText =
+        `Deseja realmente excluir o produto "${produto.nome}"?\n\nQuantidade: ${produto.quantidade}\nLocalização: ${produto.localizacao}`;
+
+    document.getElementById("modalExcluir").classList.add("ativo");
+}
+
+function fecharModalExcluir() {
+    document.getElementById("modalExcluir").classList.remove("ativo");
+    produtoExcluindo = null;
+}
+
+async function confirmarExclusao() {
+    await fetch(`${API}/produtos/${produtoExcluindo}`, {
         method: "DELETE"
     });
 
+    fecharModalExcluir();
     atualizarTudo();
 }
 
-async function entradaEstoque(id) {
-    const quantidade = Number(prompt("Quantas unidades deseja adicionar?"));
+/* =========================
+   MODAL ENTRADA / SAÍDA
+========================= */
+
+async function abrirModalEstoque(id, tipo) {
+    const produtos = await buscarProdutos();
+    const produto = produtos.find(p => Number(p.id) === Number(id));
+
+    if (!produto) {
+        alert("Produto não encontrado.");
+        return;
+    }
+
+    produtoSelecionado = id;
+    tipoMovimentacao = tipo;
+
+    document.getElementById("modalQuantidade").value = "";
+
+    document.getElementById("modalTitulo").innerText =
+        tipo === "entrada"
+            ? "Entrada de Estoque"
+            : "Saída de Estoque";
+
+    document.getElementById("modalProduto").innerText =
+        `📦 ${produto.nome}`;
+
+    document.getElementById("modalEstoque").classList.add("ativo");
+}
+
+function fecharModalEstoque() {
+    document.getElementById("modalEstoque").classList.remove("ativo");
+}
+
+async function confirmarMovimentacao() {
+    const quantidade = Number(
+        document.getElementById("modalQuantidade").value
+    );
 
     if (!quantidade || quantidade <= 0) {
         alert("Digite uma quantidade válida.");
         return;
     }
 
-    await fetch(`${API}/produtos/entrada/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ quantidade })
-    });
+    const rota =
+        tipoMovimentacao === "entrada"
+            ? "entrada"
+            : "saida";
 
-    atualizarTudo();
-}
-
-async function saidaEstoque(id) {
-    const quantidade = Number(prompt("Quantas unidades deseja retirar?"));
-
-    if (!quantidade || quantidade <= 0) {
-        alert("Digite uma quantidade válida.");
-        return;
-    }
-
-    const resposta = await fetch(`${API}/produtos/saida/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ quantidade })
-    });
+    const resposta = await fetch(
+        `${API}/produtos/${rota}/${produtoSelecionado}`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                quantidade
+            })
+        }
+    );
 
     if (!resposta.ok) {
         const erro = await resposta.json();
@@ -248,8 +314,13 @@ async function saidaEstoque(id) {
         return;
     }
 
+    fecharModalEstoque();
     atualizarTudo();
 }
+
+/* =========================
+   HISTÓRICO
+========================= */
 
 async function carregarHistorico() {
     const resposta = await fetch(`${API}/historico`);
@@ -277,89 +348,10 @@ async function carregarHistorico() {
         `;
     });
 }
-function abrirModalEstoque(id, tipo){
 
-    produtoSelecionado = id;
-    tipoMovimentacao = tipo;
-
-    document.getElementById("modalQuantidade").value = "";
-
-    document.getElementById("modalTitulo").innerText =
-        tipo === "entrada"
-        ? "Entrada de Estoque"
-        : "Saída de Estoque";
-
-    document.getElementById("modalProduto").innerText =
-        "Informe a quantidade da movimentação";
-
-    document
-        .getElementById("modalEstoque")
-        .classList
-        .add("ativo");
-}
-
-function fecharModalEstoque(){
-    document
-        .getElementById("modalEstoque")
-        .classList
-        .remove("ativo");
-}
-
-async function confirmarMovimentacao(){
-
-    const quantidade = Number(
-        document.getElementById("modalQuantidade").value
-    );
-
-    if(!quantidade || quantidade <= 0){
-        alert("Digite uma quantidade válida.");
-        return;
-    }
-
-    const rota =
-        tipoMovimentacao === "entrada"
-        ? "entrada"
-        : "saida";
-
-    const resposta = await fetch(
-        `${API}/produtos/${rota}/${produtoSelecionado}`,
-        {
-            method:"PUT",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                quantidade
-            })
-        }
-    );
-
-    if(!resposta.ok){
-        const erro = await resposta.json();
-        alert(erro.mensagem);
-        return;
-    }
-
-    fecharModalEstoque();
-
-    atualizarTudo();
-
-}
-
-function sair() {
-    localStorage.removeItem("yzatLogado");
-    localStorage.removeItem("yzatUsuario");
-    window.location.href = "login.html";
-}
-
-function mostrarUsuarioLogado() {
-    const usuario = localStorage.getItem("yzatUsuario");
-
-    if (usuario) {
-        document.getElementById("usuarioLogado").innerText =
-            `👤 Bem-vindo, ${usuario}`;
-    }
-}
+/* =========================
+   PDF
+========================= */
 
 async function exportarPDF() {
     const produtos = await buscarProdutos();
@@ -403,6 +395,10 @@ async function exportarPDF() {
 
     pdf.save("relatorio-yzat-almoxarifado.pdf");
 }
+
+/* =========================
+   GRÁFICO
+========================= */
 
 function atualizarGrafico(produtos) {
     const canvas = document.getElementById("graficoEstoque");
@@ -449,6 +445,25 @@ function atualizarGrafico(produtos) {
             }
         }
     });
+}
+
+/* =========================
+   USUÁRIO / SAIR
+========================= */
+
+function sair() {
+    localStorage.removeItem("yzatLogado");
+    localStorage.removeItem("yzatUsuario");
+    window.location.href = "login.html";
+}
+
+function mostrarUsuarioLogado() {
+    const usuario = localStorage.getItem("yzatUsuario");
+
+    if (usuario) {
+        document.getElementById("usuarioLogado").innerText =
+            `👤 Bem-vindo, ${usuario}`;
+    }
 }
 
 mostrarUsuarioLogado();
