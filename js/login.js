@@ -1,14 +1,33 @@
-function fazerLogin() {
+async function fazerLogin() {
     const usuario = document.getElementById("usuario").value.trim();
     const senha = document.getElementById("senha").value.trim();
     const erro = document.getElementById("erroLogin");
 
-    if (usuario === "admin" && senha === "1234") {
-        localStorage.setItem("yzatLogado", "sim");
-        localStorage.setItem("yzatUsuario", usuario);
+    erro.innerText = "";
 
-        window.location.href = "index.html";
-    } else {
-        erro.innerText = "Usuário ou senha incorretos.";
+    try {
+        const resposta = await fetch("https://yzat-almoxarifado.onrender.com/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                usuario,
+                senha
+            })
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            localStorage.setItem("yzatLogado", "sim");
+            localStorage.setItem("yzatUsuario", dados.usuario.nome);
+            window.location.href = "index.html";
+        } else {
+            erro.innerText = dados.mensagem;
+        }
+
+    } catch {
+        erro.innerText = "Erro ao conectar com o servidor.";
     }
 }
