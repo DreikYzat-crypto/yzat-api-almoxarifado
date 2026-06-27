@@ -130,6 +130,32 @@ app.put("/usuarios/:id", async (req, res) => {
     });
 });
 
+app.put("/usuarios/:id/status", async (req, res) => {
+    const id = Number(req.params.id);
+
+    const usuarioAtual = await pool.query(
+        "SELECT ativo FROM usuarios WHERE id = $1",
+        [id]
+    );
+
+    if (usuarioAtual.rows.length === 0) {
+        return res.status(404).json({
+            mensagem: "Usuário não encontrado."
+        });
+    }
+
+    const novoStatus = !usuarioAtual.rows[0].ativo;
+
+    const resultado = await pool.query(
+        "UPDATE usuarios SET ativo = $1 WHERE id = $2 RETURNING id, nome, usuario, cargo, ativo",
+        [novoStatus, id]
+    );
+
+    res.json({
+        mensagem: novoStatus ? "Usuário ativado." : "Usuário desativado.",
+        usuario: resultado.rows[0]
+    });
+});
 
 app.get("/produtos", async (req, res) => {
     const resultado = await pool.query("SELECT * FROM produtos ORDER BY id ASC");
