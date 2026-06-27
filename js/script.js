@@ -2,7 +2,7 @@ if (localStorage.getItem("yzatLogado") !== "sim") {
     window.location.href = "login.html";
 }
 
-const API = "http://127.0.0.1:3000";
+const API = "https://yzat-almoxarifado.onrender.com";
 let graficoEstoque = null;
 
 function obterStatusEstoque(quantidade) {
