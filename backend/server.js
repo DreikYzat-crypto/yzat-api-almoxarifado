@@ -79,6 +79,58 @@ app.get("/usuarios", async (req, res) => {
     res.json(resultado.rows);
 });
 
+app.delete("/usuarios/:id", async (req, res) => {
+    const id = Number(req.params.id);
+
+    const resultado = await pool.query(
+        "DELETE FROM usuarios WHERE id = $1 RETURNING id, nome",
+        [id]
+    );
+
+    if (resultado.rows.length === 0) {
+        return res.status(404).json({
+            mensagem: "Usuário não encontrado."
+        });
+    }
+
+    res.json({
+        mensagem: "Usuário removido com sucesso."
+    });
+});
+
+app.put("/usuarios/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    const { nome, usuario, cargo } = req.body;
+
+    if (!nome || !usuario || !cargo) {
+        return res.status(400).json({
+            mensagem: "Preencha todos os campos."
+        });
+    }
+
+    const resultado = await pool.query(
+        `
+        UPDATE usuarios
+        SET nome = $1, usuario = $2, cargo = $3
+        WHERE id = $4
+        RETURNING id, nome, usuario, cargo, ativo
+        `,
+        [nome, usuario, cargo, id]
+    );
+
+    if (resultado.rows.length === 0) {
+        return res.status(404).json({
+            mensagem: "Usuário não encontrado."
+        });
+    }
+
+    res.json({
+        mensagem: "Usuário atualizado com sucesso.",
+        usuario: resultado.rows[0]
+    });
+});
+
+
 app.get("/produtos", async (req, res) => {
     const resultado = await pool.query("SELECT * FROM produtos ORDER BY id ASC");
     res.json(resultado.rows);
