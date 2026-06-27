@@ -105,6 +105,44 @@ app.post("/produtos", async (req, res) => {
     });
 });
 
+app.post("/usuarios", async (req, res) => {
+    const { nome, usuario, senha, cargo } = req.body;
+
+    if (!nome || !usuario || !senha) {
+        return res.status(400).json({
+            mensagem: "Preencha todos os campos."
+        });
+    }
+
+    const existe = await pool.query(
+        "SELECT id FROM usuarios WHERE usuario = $1",
+        [usuario]
+    );
+
+    if (existe.rows.length > 0) {
+        return res.status(400).json({
+            mensagem: "Usuário já existe."
+        });
+    }
+
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    const resultado = await pool.query(
+        `INSERT INTO usuarios
+        (nome, usuario, senha, cargo)
+        VALUES ($1,$2,$3,$4)
+        RETURNING id,nome,usuario,cargo`,
+        [
+            nome,
+            usuario,
+            senhaHash,
+            cargo || "almoxarife"
+        ]
+    );
+
+    res.status(201).json(resultado.rows[0]);
+});
+
 app.put("/produtos/:id", async (req, res) => {
     const id = Number(req.params.id);
     const { nome, quantidade, localizacao } = req.body;
