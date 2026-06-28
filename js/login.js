@@ -22,6 +22,8 @@ async function fazerLogin() {
         if (resposta.ok) {
             localStorage.setItem("yzatLogado", "sim");
             localStorage.setItem("yzatUsuario", dados.usuario.nome);
+            localStorage.setItem("yzatCargo", dados.usuario.cargo);
+            
             window.location.href = "index.html";
         } else {
             erro.innerText = dados.mensagem;

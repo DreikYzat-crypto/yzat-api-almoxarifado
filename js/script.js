@@ -10,6 +10,20 @@ let tipoMovimentacao = null;
 let produtoEditando = null;
 let produtoExcluindo = null;
 
+const cargoUsuario = localStorage.getItem("yzatCargo");
+
+function ehAdmin() {
+    return cargoUsuario === "admin";
+}
+
+function ehSupervisor() {
+    return cargoUsuario === "supervisor";
+}
+
+function ehAlmoxarife() {
+    return cargoUsuario === "almoxarife";
+}
+
 function obterStatusEstoque(quantidade) {
     const qtd = Number(quantidade);
 
@@ -36,6 +50,14 @@ function obterStatusEstoque(quantidade) {
 function criarCardProduto(produto) {
     const status = obterStatusEstoque(produto.quantidade);
 
+    const botaoEditar = ehAdmin() || ehSupervisor()
+        ? `<button class="btn-editar" onclick="editarProduto(${produto.id})">✏️ Editar</button>`
+        : "";
+
+    const botaoExcluir = ehAdmin()
+        ? `<button class="btn-excluir" onclick="excluirProduto(${produto.id})">🗑️ Excluir</button>`
+        : "";
+
     return `
         <div class="produto ${status.classe}">
             <h3>📦 ${produto.nome}</h3>
@@ -47,9 +69,7 @@ function criarCardProduto(produto) {
             <p><strong>Localização:</strong> ${produto.localizacao}</p>
 
             <div class="acoes">
-                <button class="btn-editar" onclick="editarProduto(${produto.id})">
-                    ✏️ Editar
-                </button>
+                ${botaoEditar}
 
                 <button class="btn-entrada" onclick="abrirModalEstoque(${produto.id}, 'entrada')">
                     ➕ Entrada
@@ -59,9 +79,7 @@ function criarCardProduto(produto) {
                     ➖ Saída
                 </button>
 
-                <button class="btn-excluir" onclick="excluirProduto(${produto.id})">
-                    🗑️ Excluir
-                </button>
+                ${botaoExcluir}
             </div>
         </div>
     `;
@@ -159,11 +177,12 @@ async function pesquisarProduto() {
     mostrarProdutos(produtosFiltrados);
 }
 
-/* =========================
-   MODAL EDITAR
-========================= */
-
 async function editarProduto(id) {
+    if (!(ehAdmin() || ehSupervisor())) {
+        alert("Você não tem permissão para editar produtos.");
+        return;
+    }
+
     const produtos = await buscarProdutos();
     const produto = produtos.find(p => Number(p.id) === Number(id));
 
@@ -187,6 +206,11 @@ function fecharModalEditar() {
 }
 
 async function salvarEdicao() {
+    if (!(ehAdmin() || ehSupervisor())) {
+        alert("Você não tem permissão para editar produtos.");
+        return;
+    }
+
     const nome = document.getElementById("editarNome").value.trim();
     const quantidade = Number(document.getElementById("editarQuantidade").value);
     const localizacao = document.getElementById("editarLocalizacao").value.trim();
@@ -212,11 +236,12 @@ async function salvarEdicao() {
     atualizarTudo();
 }
 
-/* =========================
-   MODAL EXCLUIR
-========================= */
-
 async function excluirProduto(id) {
+    if (!ehAdmin()) {
+        alert("Apenas administradores podem excluir produtos.");
+        return;
+    }
+
     const produtos = await buscarProdutos();
     const produto = produtos.find(p => Number(p.id) === Number(id));
 
@@ -239,6 +264,11 @@ function fecharModalExcluir() {
 }
 
 async function confirmarExclusao() {
+    if (!ehAdmin()) {
+        alert("Apenas administradores podem excluir produtos.");
+        return;
+    }
+
     await fetch(`${API}/produtos/${produtoExcluindo}`, {
         method: "DELETE"
     });
@@ -246,10 +276,6 @@ async function confirmarExclusao() {
     fecharModalExcluir();
     atualizarTudo();
 }
-
-/* =========================
-   MODAL ENTRADA / SAÍDA
-========================= */
 
 async function abrirModalEstoque(id, tipo) {
     const produtos = await buscarProdutos();
@@ -318,10 +344,6 @@ async function confirmarMovimentacao() {
     atualizarTudo();
 }
 
-/* =========================
-   HISTÓRICO
-========================= */
-
 async function carregarHistorico() {
     const resposta = await fetch(`${API}/historico`);
     const historico = await resposta.json();
@@ -348,10 +370,6 @@ async function carregarHistorico() {
         `;
     });
 }
-
-/* =========================
-   PDF
-========================= */
 
 async function exportarPDF() {
     const produtos = await buscarProdutos();
@@ -395,10 +413,6 @@ async function exportarPDF() {
 
     pdf.save("relatorio-yzat-almoxarifado.pdf");
 }
-
-/* =========================
-   GRÁFICO
-========================= */
 
 function atualizarGrafico(produtos) {
     const canvas = document.getElementById("graficoEstoque");
@@ -447,22 +461,20 @@ function atualizarGrafico(produtos) {
     });
 }
 
-/* =========================
-   USUÁRIO / SAIR
-========================= */
-
 function sair() {
     localStorage.removeItem("yzatLogado");
     localStorage.removeItem("yzatUsuario");
+    localStorage.removeItem("yzatCargo");
     window.location.href = "login.html";
 }
 
 function mostrarUsuarioLogado() {
     const usuario = localStorage.getItem("yzatUsuario");
+    const cargo = localStorage.getItem("yzatCargo");
 
     if (usuario) {
         document.getElementById("usuarioLogado").innerText =
-            `👤 Bem-vindo, ${usuario}`;
+            `👤 Bem-vindo, ${usuario} | Cargo: ${cargo}`;
     }
 }
 

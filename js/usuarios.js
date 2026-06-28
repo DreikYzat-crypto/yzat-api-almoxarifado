@@ -1,3 +1,12 @@
+if (localStorage.getItem("yzatLogado") !== "sim") {
+    window.location.href = "login.html";
+}
+
+if (localStorage.getItem("yzatCargo") !== "admin") {
+    alert("Acesso negado. Apenas administradores podem acessar esta página.");
+    window.location.href = "index.html";
+}
+
 const API = "https://yzat-almoxarifado.onrender.com";
 
 function mostrarMensagem(texto, tipo = "sucesso") {
