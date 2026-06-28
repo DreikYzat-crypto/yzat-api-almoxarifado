@@ -3,7 +3,7 @@ if (localStorage.getItem("yzatLogado") !== "sim") {
 }
 
 if (localStorage.getItem("yzatCargo") !== "admin") {
-    alert("Acesso negado. Apenas administradores podem acessar esta página.");
+    alert("Acesso permitido apenas para administradores.");
     window.location.href = "index.html";
 }
 
