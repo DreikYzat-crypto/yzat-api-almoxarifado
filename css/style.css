@@ -505,3 +505,67 @@ body{
 .btn-confirmar:hover{
     background:#16a34a;
 }
+.menu-btn{
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background:#0ea5e9;
+    color:#fff;
+    border:none;
+    width:45px;
+    height:45px;
+    border-radius:8px;
+    font-size:24px;
+    cursor:pointer;
+    z-index:1001;
+}
+
+.menu-lateral{
+    position:fixed;
+    top:0;
+    left:-260px;
+    width:250px;
+    height:100%;
+    background:#111827;
+    transition:.3s;
+    z-index:1000;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    box-shadow:4px 0 15px rgba(0,0,0,.4);
+}
+
+.menu-lateral.ativo{
+    left:0;
+}
+
+.menu-lateral h2{
+    color:#38bdf8;
+    margin-top:35px;
+}
+
+.menu-lateral a,
+.menu-lateral button{
+    background:none;
+    border:none;
+    color:#fff;
+    text-align:left;
+    font-size:16px;
+    text-decoration:none;
+    cursor:pointer;
+    padding:10px;
+    border-radius:8px;
+}
+
+.menu-lateral a:hover,
+.menu-lateral button:hover{
+    background:#1e293b;
+}
+
+.fechar-menu{
+    position:absolute;
+    top:10px;
+    right:10px;
+    font-size:24px;
+}

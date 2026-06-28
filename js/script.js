@@ -10,18 +10,36 @@ let tipoMovimentacao = null;
 let produtoEditando = null;
 let produtoExcluindo = null;
 
-const cargoUsuario = localStorage.getItem("yzatCargo");
+function obterCargo() {
+    return localStorage.getItem("yzatCargo");
+}
 
 function ehAdmin() {
-    return cargoUsuario === "admin";
+    return obterCargo() === "admin";
 }
 
 function ehSupervisor() {
-    return cargoUsuario === "supervisor";
+    return obterCargo() === "supervisor";
 }
 
 function ehAlmoxarife() {
-    return cargoUsuario === "almoxarife";
+    return obterCargo() === "almoxarife";
+}
+
+function abrirMenu() {
+    document.getElementById("menuLateral").classList.add("ativo");
+}
+
+function fecharMenu() {
+    document.getElementById("menuLateral").classList.remove("ativo");
+}
+
+function configurarMenuPorCargo() {
+    const menuUsuarios = document.getElementById("menuUsuarios");
+
+    if (menuUsuarios && !ehAdmin()) {
+        menuUsuarios.style.display = "none";
+    }
 }
 
 function obterStatusEstoque(quantidade) {
@@ -478,12 +496,6 @@ function mostrarUsuarioLogado() {
     }
 }
 
-const cargo = localStorage.getItem("yzatCargo");
-const btnUsuarios = document.getElementById("btnUsuarios");
-
-if (btnUsuarios && cargo !== "admin") {
-    btnUsuarios.style.display = "none";
-}
-
 mostrarUsuarioLogado();
+configurarMenuPorCargo();
 atualizarTudo();

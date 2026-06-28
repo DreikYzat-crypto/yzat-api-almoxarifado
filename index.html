@@ -14,6 +14,21 @@
 <body>
 
   <main class="container">
+    
+    <button class="menu-btn" onclick="abrirMenu()">☰</button>
+
+<nav id="menuLateral" class="menu-lateral">
+    <button class="fechar-menu" onclick="fecharMenu()">×</button>
+
+    <h2>📦 YZAT</h2>
+
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="#produtos">📦 Produtos</a>
+    <a id="menuUsuarios" href="usuarios.html">👥 Usuários</a>
+    <a href="#historico">📜 Histórico</a>
+
+    <button onclick="sair()">🚪 Sair</button>
+</nav>
 
     <header class="topo">
       <h1>📦 YZAT Almoxarifado</h1>
@@ -22,11 +37,6 @@
 
       <button onclick="sair()" class="btn-sair">Sair</button>
       
-      <button id="btnUsuarios"
-        class="btn-usuarios"
-        onclick="window.location.href='usuarios.html'">
-    👥 Usuários
-</button>
 
       <p>Sistema de controle de produtos e estoque</p>
     </header>
